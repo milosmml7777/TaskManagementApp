@@ -1,0 +1,58 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+expo-app/node_modules/
+
+# Build output
+dist/
+dist-ssr/
+coverage/
+*.tsbuildinfo
+
+# Expo / React Native
+.expo/
+expo-app/.expo/
+web-build/
+expo-app/web-build/
+.metro-health-check*
+expo-env.d.ts
+expo-app/expo-env.d.ts
+
+# Native generated folders
+expo-app/android/
+expo-app/ios/
+
+# Environment and local overrides
+.env
+.env.*
+!.env.example
+*.local
+
+# Keys and signing files
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.orig.*
