@@ -32,9 +32,11 @@ export type TaskStats = {
 export type ThemeColors = {
   background: string;
   surface: string;
+  surfaceStrong: string;
   card: string;
   border: string;
   text: string;
+  heading: string;
   mutedText: string;
   placeholder: string;
   accent: string;
@@ -42,4 +44,5 @@ export type ThemeColors = {
   onAccent: string;
   success: string;
   danger: string;
+  dangerSoft: string;
 };

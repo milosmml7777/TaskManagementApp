@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TASK_CATEGORIES } from '../utils/constants';
 import type { Task, TaskInput } from '../utils/types';
 
@@ -16,7 +16,7 @@ type FormState = {
 
 function getInitialState(task?: Task): FormState {
   return {
-    title: task?.title ?? '',
+    title: (task?.title ?? '').slice(0, 30),
     description: task?.description ?? '',
     dueDate: task?.dueDate ?? '',
     category: task?.category ?? TASK_CATEGORIES[0],
@@ -26,15 +26,54 @@ function getInitialState(task?: Task): FormState {
 export function TaskForm({ initialTask, onSubmit }: TaskFormProps) {
   const [formState, setFormState] = useState<FormState>(() => getInitialState(initialTask));
   const [titleError, setTitleError] = useState('');
+  const [titleLimitFeedback, setTitleLimitFeedback] = useState(false);
+  const titleLimitTimeoutRef = useRef<number | null>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setFormState(getInitialState(initialTask));
   }, [initialTask]);
 
-  const handleChange = (field: keyof FormState, value: string) => {
-    setFormState((current) => ({ ...current, [field]: value }));
+  useEffect(() => {
+    return () => {
+      if (titleLimitTimeoutRef.current !== null) {
+        window.clearTimeout(titleLimitTimeoutRef.current);
+      }
+    };
+  }, []);
 
-    if (field === 'title' && value.trim()) {
+  const triggerTitleLimitFeedback = () => {
+    if (titleLimitTimeoutRef.current !== null) {
+      window.clearTimeout(titleLimitTimeoutRef.current);
+    }
+
+    setTitleLimitFeedback(true);
+
+    titleInputRef.current?.animate(
+      [
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-7px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-4px)' },
+        { transform: 'translateX(3px)' },
+        { transform: 'translateX(0)' },
+      ],
+      {
+        duration: 420,
+        easing: 'ease',
+      },
+    );
+
+    titleLimitTimeoutRef.current = window.setTimeout(() => {
+      setTitleLimitFeedback(false);
+    }, 550);
+  };
+
+  const handleChange = (field: keyof FormState, value: string) => {
+    const normalizedValue = field === 'title' ? value.slice(0, 30) : value;
+    setFormState((current) => ({ ...current, [field]: normalizedValue }));
+
+    if (field === 'title' && normalizedValue.trim()) {
       setTitleError('');
     }
   };
@@ -58,12 +97,36 @@ export function TaskForm({ initialTask, onSubmit }: TaskFormProps) {
   return (
     <form className="task-form card" onSubmit={handleSubmit}>
       <label className="field-group">
-        <span className="field-label">Title</span>
+        <span className="field-row">
+          <span className="field-label">Title</span>
+          <span className={`field-helper ${titleLimitFeedback ? 'limit-feedback-helper' : ''}`}>
+            {formState.title.length}/30
+          </span>
+        </span>
         <input
-          className={`text-input ${titleError ? 'input-error' : ''}`}
+          ref={titleInputRef}
+          className={`text-input ${titleError ? 'input-error' : ''} ${
+            titleLimitFeedback ? 'limit-feedback-input' : ''
+          }`}
           type="text"
+          maxLength={30}
           value={formState.title}
           onChange={(event) => handleChange('title', event.target.value)}
+          onKeyDown={(event) => {
+            const isCharacterKey =
+              event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey;
+
+            if (formState.title.length >= 30 && isCharacterKey) {
+              triggerTitleLimitFeedback();
+            }
+          }}
+          onPaste={(event) => {
+            const pastedText = event.clipboardData.getData('text');
+
+            if (formState.title.length + pastedText.length > 30) {
+              triggerTitleLimitFeedback();
+            }
+          }}
           placeholder="Finish React project"
         />
         {titleError ? <span className="field-error">{titleError}</span> : null}

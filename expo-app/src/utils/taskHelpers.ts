@@ -36,6 +36,14 @@ export function formatDate(value: string): string {
   });
 }
 
+export function truncateText(value: string, maxLength: number): string {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  return `${value.slice(0, maxLength).trimEnd()}...`;
+}
+
 export function getTaskStats(tasks: Task[]): TaskStats {
   const total = tasks.length;
   const completed = tasks.filter((task) => task.completed).length;
